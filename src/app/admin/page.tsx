@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+
 const ADMIN_USER_ID = "83805e49-e935-4413-93f5-bad10d4bde4c";
 
 type Profile = {
@@ -22,32 +23,29 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
 
   const fetchProfiles = async () => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*");
-
+    const { data } = await supabase.from("profiles").select("*");
     setProfiles(data || []);
   };
 
   useEffect(() => {
-  const checkAdmin = async () => {
-    const { data } = await supabase.auth.getUser();
+    const checkAdmin = async () => {
+      const { data } = await supabase.auth.getUser();
 
-    if (!data.user) {
+      if (!data.user) {
+        setChecking(false);
+        return;
+      }
+
+      if (data.user.id === ADMIN_USER_ID) {
+        setIsAdmin(true);
+        fetchProfiles();
+      }
+
       setChecking(false);
-      return;
-    }
+    };
 
-    if (data.user.id === ADMIN_USER_ID) {
-      setIsAdmin(true);
-      fetchProfiles();
-    }
-
-    setChecking(false);
-  };
-
-  checkAdmin();
-}, []);
+    checkAdmin();
+  }, []);
 
   const updateProfile = async (profile: Profile) => {
     const { error } = await supabase
@@ -72,6 +70,25 @@ export default function AdminPage() {
     fetchProfiles();
   };
 
+  const deleteProfile = async (profile: Profile) => {
+    const ok = confirm(`${profile.discord_name} 유저를 삭제할까요?`);
+
+    if (!ok) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("user_id", profile.user_id);
+
+    if (error) {
+      alert("삭제 실패");
+      return;
+    }
+
+    alert("삭제 완료!");
+    fetchProfiles();
+  };
+
   const updateLocal = (
     userId: string,
     key: keyof Profile,
@@ -85,13 +102,15 @@ export default function AdminPage() {
       )
     );
   };
-if (checking) {
-  return <main className="p-6">관리자 확인 중...</main>;
-}
 
-if (!isAdmin) {
-  return <main className="p-6">접근 권한이 없습니다.</main>;
-}
+  if (checking) {
+    return <main className="p-6">관리자 확인 중...</main>;
+  }
+
+  if (!isAdmin) {
+    return <main className="p-6">접근 권한이 없습니다.</main>;
+  }
+
   return (
     <main className="p-6">
       <h1 className="text-4xl font-bold mb-6">
@@ -173,12 +192,21 @@ if (!isAdmin) {
               />
             </div>
 
-            <button
-              onClick={() => updateProfile(profile)}
-              className="mt-4 bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold"
-            >
-              저장
-            </button>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => updateProfile(profile)}
+                className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold"
+              >
+                저장
+              </button>
+
+              <button
+                onClick={() => deleteProfile(profile)}
+                className="bg-red-500 text-white px-5 py-3 rounded-xl font-bold"
+              >
+                삭제
+              </button>
+            </div>
           </div>
         ))}
       </div>
