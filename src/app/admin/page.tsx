@@ -81,14 +81,35 @@ export default function AdminPage() {
     .eq("user_id", profile.user_id);
 
   if (error) {
-    alert(error.message);
+    alert("삭제 실패");
     return;
   }
 
   alert(`삭제 완료: ${count}개`);
   fetchProfiles();
 };
+const addMatchResult = async (
+  profile: Profile,
+  result: "win" | "lose"
+) => {
+  const { error } = await supabase
+    .from("match_results")
+    .insert({
+      user_id: profile.user_id,
+      result: result,
+    });
 
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert(
+    `${profile.discord_name} ${
+      result === "win" ? "승리" : "패배"
+    } 기록 완료!`
+  );
+};
   const updateLocal = (
     userId: string,
     key: keyof Profile,
@@ -192,21 +213,35 @@ export default function AdminPage() {
               />
             </div>
 
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => updateProfile(profile)}
-                className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold"
-              >
-                저장
-              </button>
+            <div className="mt-4 flex gap-2 flex-wrap">
+  <button
+    onClick={() => updateProfile(profile)}
+    className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold"
+  >
+    저장
+  </button>
 
-              <button
-                onClick={() => deleteProfile(profile)}
-                className="bg-red-500 text-white px-5 py-3 rounded-xl font-bold"
-              >
-                삭제
-              </button>
-            </div>
+  <button
+    onClick={() => addMatchResult(profile, "win")}
+    className="bg-green-500 text-white px-5 py-3 rounded-xl font-bold"
+  >
+    승리 기록
+  </button>
+
+  <button
+    onClick={() => addMatchResult(profile, "lose")}
+    className="bg-gray-500 text-white px-5 py-3 rounded-xl font-bold"
+  >
+    패배 기록
+  </button>
+
+  <button
+    onClick={() => deleteProfile(profile)}
+    className="bg-red-500 text-white px-5 py-3 rounded-xl font-bold"
+  >
+    삭제
+  </button>
+</div>
           </div>
         ))}
       </div>
