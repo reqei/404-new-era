@@ -113,6 +113,38 @@ const addMatchResult = async (
     } 기록 완료!`
   );
 };
+const addTeamResult = async (
+  winner: "blue" | "red"
+) => {
+  if (blueTeam.length === 0 || redTeam.length === 0) {
+    alert("블루팀과 레드팀을 먼저 추가해주세요.");
+    return;
+  }
+
+  const records = [
+    ...blueTeam.map((userId) => ({
+      user_id: userId,
+      result: winner === "blue" ? "win" : "lose",
+    })),
+    ...redTeam.map((userId) => ({
+      user_id: userId,
+      result: winner === "red" ? "win" : "lose",
+    })),
+  ];
+
+  const { error } = await supabase
+    .from("match_results")
+    .insert(records);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("팀 결과 기록 완료!");
+  setBlueTeam([]);
+  setRedTeam([]);
+};
   const updateLocal = (
     userId: string,
     key: keyof Profile,
@@ -215,35 +247,7 @@ const addMatchResult = async (
                 className="border rounded-xl px-3 py-2"
               />
             </div>
-<div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div className="bg-blue-50 border rounded-2xl p-4">
-    <h2 className="text-2xl font-bold text-blue-700 mb-3">
-      🔵 블루팀
-    </h2>
 
-    {profiles
-      .filter((p) => blueTeam.includes(p.user_id))
-      .map((p) => (
-        <p key={p.user_id}>
-          {p.discord_name}
-        </p>
-      ))}
-  </div>
-
-  <div className="bg-red-50 border rounded-2xl p-4">
-    <h2 className="text-2xl font-bold text-red-700 mb-3">
-      🔴 레드팀
-    </h2>
-
-    {profiles
-      .filter((p) => redTeam.includes(p.user_id))
-      .map((p) => (
-        <p key={p.user_id}>
-          {p.discord_name}
-        </p>
-      ))}
-  </div>
-</div>
             <div className="mt-4 flex gap-2 flex-wrap">
                 <button
   onClick={() =>
@@ -294,6 +298,51 @@ const addMatchResult = async (
           </div>
         ))}
       </div>
+      <div className="mt-8 flex gap-3 flex-wrap">
+  <button
+    onClick={() => addTeamResult("blue")}
+    className="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold"
+  >
+    🔵 블루팀 승리
+  </button>
+
+  <button
+    onClick={() => addTeamResult("red")}
+    className="bg-red-600 text-white px-5 py-3 rounded-xl font-bold"
+  >
+    🔴 레드팀 승리
+  </button>
+</div>
+
+<div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="bg-blue-50 border rounded-2xl p-4">
+    <h2 className="text-2xl font-bold text-blue-700 mb-3">
+      🔵 블루팀
+    </h2>
+
+    {profiles
+      .filter((p) => blueTeam.includes(p.user_id))
+      .map((p) => (
+        <p key={p.user_id}>
+          {p.discord_name}
+        </p>
+      ))}
+  </div>
+
+  <div className="bg-red-50 border rounded-2xl p-4">
+    <h2 className="text-2xl font-bold text-red-700 mb-3">
+      🔴 레드팀
+    </h2>
+
+    {profiles
+      .filter((p) => redTeam.includes(p.user_id))
+      .map((p) => (
+        <p key={p.user_id}>
+          {p.discord_name}
+        </p>
+      ))}
+  </div>
+</div>
     </main>
   );
 }
