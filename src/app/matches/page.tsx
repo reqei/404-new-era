@@ -17,17 +17,28 @@ type Player = {
   subLane: string;
 };
 
+type Profile = {
+  discord_name: string;
+  main_lane: string;
+  sub_lane: string;
+};
+
 export default function MatchesPage() {
- const [joinList, setJoinList] = useState<Player[]>([]);
+  const [joinList, setJoinList] = useState<Player[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [selectedPlayer, setSelectedPlayer] = useState("");
 
-  const [blueTeam, setBlueTeam] = useState<Player[]>([]);
-  const [redTeam, setRedTeam] = useState<Player[]>([]);
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("discord_name, main_lane, sub_lane");
 
-  const [newPlayer, setNewPlayer] = useState("");
-  const [mainLane, setMainLane] = useState("탑");
-  const [subLane, setSubLane] = useState("정글");
+      setProfiles(data || []);
+    };
 
-  const lanes = ["탑", "정글", "미드", "원딜", "서포터"];
+    fetchProfiles();
+  }, []);
 
   return (
     <main className="p-6">
@@ -62,104 +73,97 @@ export default function MatchesPage() {
                 참가자 목록
               </h3>
 
-              <div className="flex flex-wrap gap-2">
-                {joinList.map((player) => (
-                  <div
-                    key={player.name}
-                    className="bg-white border rounded-xl px-3 py-2 flex items-center gap-4"
-                  >
-                    <span>
-                      👤 {player.name} / 🎯 {player.mainLane} / 🔄{" "}
-                      {player.subLane}
-                    </span>
-
-                    <button
-                      onClick={() =>
-                        setJoinList(
-                          joinList.filter(
-                            (item) => item.name !== player.name
-                          )
-                        )
-                      }
-                      className="text-red-500 font-bold"
+              {joinList.length === 0 ? (
+                <p className="text-gray-500 mb-3">
+                  아직 참가자가 없습니다.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {joinList.map((player) => (
+                    <div
+                      key={player.name}
+                      className="bg-white border rounded-xl px-3 py-2 flex items-center gap-4"
                     >
-                      ❌
-                    </button>
-                  </div>
-                ))}
-              </div>
+                      <span>
+                        👤 {player.name} / 🎯 {player.mainLane} / 🔄{" "}
+                        {player.subLane}
+                      </span>
 
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-2">
-                <input
-                  type="text"
-                  placeholder="참가자 닉네임 입력"
-                  value={newPlayer}
-                  onChange={(e) =>
-                    setNewPlayer(e.target.value)
-                  }
-                  className="border rounded-xl px-3 py-2"
-                />
-
-                <select
-                  value={mainLane}
-                  onChange={(e) =>
-                    setMainLane(e.target.value)
-                  }
-                  className="border rounded-xl px-3 py-2"
-                >
-                  {lanes.map((lane) => (
-                    <option key={lane} value={lane}>
-                      주라인: {lane}
-                    </option>
+                      <button
+                        onClick={() =>
+                          setJoinList(
+                            joinList.filter(
+                              (item) => item.name !== player.name
+                            )
+                          )
+                        }
+                        className="text-red-500 font-bold"
+                      >
+                        ❌
+                      </button>
+                    </div>
                   ))}
-                </select>
+                </div>
+              )}
 
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
                 <select
-                  value={subLane}
-                  onChange={(e) =>
-                    setSubLane(e.target.value)
-                  }
+                  value={selectedPlayer}
+                  onChange={(e) => setSelectedPlayer(e.target.value)}
                   className="border rounded-xl px-3 py-2"
                 >
-                  {lanes.map((lane) => (
-                    <option key={lane} value={lane}>
-                      부라인: {lane}
+                  <option value="">참가자 선택</option>
+
+                  {profiles.map((profile) => (
+                    <option
+                      key={profile.discord_name}
+                      value={profile.discord_name}
+                    >
+                      {profile.discord_name}
                     </option>
                   ))}
                 </select>
 
                 <button
                   onClick={() => {
-                    const trimmedName = newPlayer.trim();
-
-                    if (trimmedName === "") return;
+                    if (selectedPlayer === "") {
+                      alert("참가자를 선택해주세요.");
+                      return;
+                    }
 
                     if (joinList.length >= 10) {
-                      alert(
-                        "참가 인원이 10명이라 모집이 마감되었습니다."
-                      );
+                      alert("참가 인원이 10명이라 모집이 마감되었습니다.");
                       return;
                     }
 
                     if (
                       joinList.some(
-                        (player) => player.name === trimmedName
+                        (player) => player.name === selectedPlayer
                       )
                     ) {
                       alert("이미 참가한 유저입니다.");
                       return;
                     }
 
+                    const profile = profiles.find(
+                      (item) => item.discord_name === selectedPlayer
+                    );
+
+                    if (!profile) {
+                      alert("유저 정보를 찾을 수 없습니다.");
+                      return;
+                    }
+
                     setJoinList([
                       ...joinList,
                       {
-                        name: trimmedName,
-                        mainLane,
-                        subLane,
+                        name: profile.discord_name,
+                        mainLane: profile.main_lane || "-",
+                        subLane: profile.sub_lane || "-",
                       },
                     ]);
 
-                    setNewPlayer("");
+                    setSelectedPlayer("");
                   }}
                   className={`text-white px-4 py-2 rounded-xl ${
                     joinList.length >= 10
@@ -167,101 +171,10 @@ export default function MatchesPage() {
                       : "bg-blue-500"
                   }`}
                 >
-                  {joinList.length >= 10
-                    ? "모집 마감"
-                    : "참가 신청"}
-                </button>
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={() => {
-                    if (joinList.length < 2) {
-                      alert(
-                        "최소 2명 이상 참가해야 팀을 나눌 수 있습니다."
-                      );
-                      return;
-                    }
-
-                    const shuffled = [...joinList].sort(
-                      () => Math.random() - 0.5
-                    );
-
-                    const half = Math.ceil(
-                      shuffled.length / 2
-                    );
-
-                    setBlueTeam(shuffled.slice(0, half));
-                    setRedTeam(shuffled.slice(half));
-                  }}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-xl"
-                >
-                  팀 자동 배정
-                </button>
-
-                <button
-                  onClick={() => {
-                    setBlueTeam([]);
-                    setRedTeam([]);
-                  }}
-                  className="ml-2 bg-red-500 text-white px-4 py-2 rounded-xl"
-                >
-                  팀 초기화
+                  {joinList.length >= 10 ? "모집 마감" : "참가 신청"}
                 </button>
               </div>
             </div>
-
-            {blueTeam.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div className="bg-blue-50 p-4 rounded-xl border">
-                  <h3 className="font-bold text-blue-700 mb-2">
-                    🔵 블루팀
-                  </h3>
-
-                  {blueTeam.map((player) => (
-  <div
-    key={player.name}
-    className="bg-white rounded-lg p-3 mb-2 border"
-  >
-    <p className="font-bold">
-      👤 {player.name}
-    </p>
-    <p className="text-sm text-gray-600">
-      🎯 주라인: {player.mainLane}
-    </p>
-    <p className="text-sm text-gray-600">
-      🔄 부라인: {player.subLane}
-    </p>
-  </div>
-))}
-                </div>
-
-                <div className="bg-red-50 p-4 rounded-xl border">
-                  <h3 className="font-bold text-red-700 mb-2">
-                    🔴 레드팀
-                  </h3>
-
-                 {redTeam.map((player) => (
-  <div
-    key={player.name}
-    className="bg-white rounded-lg p-3 mb-2 border"
-  >
-    <p className="font-bold">
-      👤 {player.name}
-    </p>
-
-    <p className="text-sm text-gray-600">
-      🎯 주라인: {player.mainLane}
-    </p>
-
-    <p className="text-sm text-gray-600">
-      🔄 부라인: {player.subLane}
-    </p>
-  </div>
-))}
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>

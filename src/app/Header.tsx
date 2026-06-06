@@ -20,7 +20,14 @@ export default function Header() {
 
     getUser();
   }, []);
-
+const loginWithDiscord = async () => {
+  await supabase.auth.signInWithOAuth({
+    provider: "discord",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+};
   return (
     <header className="bg-slate-950 text-white sticky top-0 z-50 shadow">
       <div className="max-w-[1000px] mx-auto px-6 py-4 flex items-center justify-between">
@@ -58,12 +65,12 @@ export default function Header() {
               />
             </Link>
           ) : (
-            <Link
-              href="/login"
-              className="bg-indigo-500 px-4 py-2 rounded-xl font-bold"
-            >
-              로그인
-            </Link>
+            <button
+  onClick={loginWithDiscord}
+  className="bg-indigo-500 px-4 py-2 rounded-xl font-bold"
+>
+  Discord 로그인
+</button>
           )}
         </nav>
       </div>
