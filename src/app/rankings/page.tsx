@@ -66,7 +66,7 @@ export default function RankingsPage() {
     .sort((a, b) => b.winRate - a.winRate || b.wins - a.wins);
 
   return (
-    <main className="px-0 pt-6">
+    <main className="pt-6">
       <h1 className="text-4xl font-bold mb-6">
         🏆 내전 랭킹
       </h1>
