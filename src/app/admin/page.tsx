@@ -24,11 +24,20 @@ export default function AdminPage() {
 
   const [blueTeam, setBlueTeam] = useState<string[]>([]);
   const [redTeam, setRedTeam] = useState<string[]>([]);
+  
+  const [applications, setApplications] = useState<any[]>([]);
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from("profiles").select("*");
     setProfiles(data || []);
   };
+  const fetchApplications = async () => {
+  const { data } = await supabase
+    .from("match_applications")
+    .select("*");
+
+  setApplications(data || []);
+};
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -40,9 +49,10 @@ export default function AdminPage() {
       }
 
       if (data.user.id === ADMIN_USER_ID) {
-        setIsAdmin(true);
-        fetchProfiles();
-      }
+  setIsAdmin(true);
+  fetchProfiles();
+  fetchApplications();
+}
 
       setChecking(false);
     };
@@ -328,6 +338,34 @@ const addTeamResult = async (
           {p.discord_name}
         </p>
       ))}
+  </div>
+</div>
+<div className="mt-10">
+  <h2 className="text-3xl font-bold mb-4">
+    📝 내전 신청 현황
+  </h2>
+
+  <div className="bg-white rounded-2xl border p-5">
+    <p className="font-bold">
+      현재 신청자 수: {applications.length}명
+    </p>
+
+    <div className="mt-4 space-y-2">
+      {applications.map((app) => {
+        const profile = profiles.find(
+          (p) => p.user_id === app.user_id
+        );
+
+        return (
+          <div
+            key={app.user_id}
+            className="border rounded-xl p-3"
+          >
+            {profile?.discord_name || app.user_id}
+          </div>
+        );
+      })}
+    </div>
   </div>
 </div>
     </main>
