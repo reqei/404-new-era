@@ -11,7 +11,7 @@ export default function RootLayout({
       <body>
        <Header />
 
-        <main className="w-full max-w-[1500px] mx-auto px-6">V
+        <main className="w-full max-w-[1500px] mx-auto px-6">
           {children}
         </main>
       </body>
