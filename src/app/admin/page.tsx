@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+const ADMIN_USER_ID = "83805e49-e935-4413-93f5-bad10d4bde4c";
 
 type Profile = {
   user_id: string;
@@ -17,6 +18,8 @@ type Profile = {
 
 export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   const fetchProfiles = async () => {
     const { data } = await supabase
@@ -27,8 +30,24 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchProfiles();
-  }, []);
+  const checkAdmin = async () => {
+    const { data } = await supabase.auth.getUser();
+
+    if (!data.user) {
+      setChecking(false);
+      return;
+    }
+
+    if (data.user.id === ADMIN_USER_ID) {
+      setIsAdmin(true);
+      fetchProfiles();
+    }
+
+    setChecking(false);
+  };
+
+  checkAdmin();
+}, []);
 
   const updateProfile = async (profile: Profile) => {
     const { error } = await supabase
@@ -66,7 +85,13 @@ export default function AdminPage() {
       )
     );
   };
+if (checking) {
+  return <main className="p-6">관리자 확인 중...</main>;
+}
 
+if (!isAdmin) {
+  return <main className="p-6">접근 권한이 없습니다.</main>;
+}
   return (
     <main className="p-6">
       <h1 className="text-4xl font-bold mb-6">
