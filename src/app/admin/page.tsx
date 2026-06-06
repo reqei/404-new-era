@@ -21,6 +21,9 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
+  
+  const [blueTeam, setBlueTeam] = useState<string[]>([]);
+  const [redTeam, setRedTeam] = useState<string[]>([]);
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from("profiles").select("*");
