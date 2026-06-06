@@ -20,6 +20,9 @@ export default function MatchesPage() {
   const [description, setDescription] = useState("");
   const [maxPlayers, setMaxPlayers] = useState(10);
 
+  const ADMIN_USER_ID = "83805e49-e935-4413-93f5-bad10d4bde4c";
+const [isAdmin, setIsAdmin] = useState(false);
+
   const fetchPosts = async () => {
     const { data } = await supabase
       .from("match_posts")
@@ -42,9 +45,12 @@ export default function MatchesPage() {
       const { data } = await supabase.auth.getUser();
 
       if (data.user) {
-        setUserId(data.user.id);
-      }
+  setUserId(data.user.id);
 
+  if (data.user.id === ADMIN_USER_ID) {
+    setIsAdmin(true);
+  }
+}
       fetchPosts();
       fetchApplications();
     };
@@ -133,6 +139,24 @@ export default function MatchesPage() {
     alert("참여 신청 취소 완료!");
     fetchApplications();
   };
+  const deletePost = async (postTitle: string) => {
+  const ok = confirm("이 내전 포스트를 삭제할까요?");
+
+  if (!ok) return;
+
+  const { error } = await supabase
+    .from("match_posts")
+    .delete()
+    .eq("title", postTitle);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("내전 포스트 삭제 완료!");
+  fetchPosts();
+};
 
   return (
     <main className="p-6">
@@ -140,12 +164,14 @@ export default function MatchesPage() {
         🎮 내전
       </h1>
 
-      <button
-        onClick={() => setShowCreate(!showCreate)}
-        className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold mb-6"
-      >
-        + 내전 포스트 생성하기
-      </button>
+      {isAdmin && (
+  <button
+    onClick={() => setShowCreate(!showCreate)}
+    className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold mb-6"
+  >
+    + 내전 포스트 생성하기
+  </button>
+)}
 
       {showCreate && (
         <div className="bg-white rounded-2xl shadow p-5 border mb-6">
@@ -214,6 +240,14 @@ export default function MatchesPage() {
               <h2 className="text-2xl font-bold mb-2">
                 {post.title}
               </h2>
+              {isAdmin && (
+  <button
+    onClick={() => deletePost(post.title)}
+    className="bg-red-500 text-white px-3 py-2 rounded-xl font-bold text-sm mb-4"
+  >
+    포스트 삭제
+  </button>
+)}
 
               <p className="text-gray-600 whitespace-pre-line mb-4">
                 {post.description || "설명 없음"}
