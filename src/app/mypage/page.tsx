@@ -52,11 +52,18 @@ if (!profileData) {
     data.user.user_metadata.name ||
     "Discord 유저";
 
-  await supabase.from("profiles").insert({
+  const { error: insertError } = await supabase
+  .from("profiles")
+  .insert({
     user_id: data.user.id,
     discord_name: discordName,
     avatar_url: data.user.user_metadata.avatar_url || "",
   });
+
+if (insertError) {
+  alert(insertError.message);
+  return;
+}
 
   const { data: newProfile } = await supabase
     .from("profiles")
