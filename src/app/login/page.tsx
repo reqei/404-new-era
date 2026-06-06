@@ -7,7 +7,7 @@ const loginWithDiscord = async () => {
   await supabase.auth.signInWithOAuth({
     provider: "discord",
     options: {
-      redirectTo:"http://localhost:3000/auth/callback",
+      redirectTo: `${window.location.origin}/auth/callback`
     
     },
   });
