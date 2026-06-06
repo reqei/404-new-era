@@ -1,30 +1,5 @@
 import Link from "next/link";
-const players = [
-  {
-    name: "정글왕",
-    tier: "에메랄드 3",
-    mainLane: "정글",
-    subLane: "서포터",
-    wins: 20,
-    losses: 10,
-  },
-  {
-    name: "미드장인",
-    tier: "플래티넘 1",
-    mainLane: "미드",
-    subLane: "원딜",
-    wins: 15,
-    losses: 8,
-  },
-  {
-    name: "탑신병자",
-    tier: "다이아 4",
-    mainLane: "탑",
-    subLane: "정글",
-    wins: 30,
-    losses: 12,
-  },
-];
+const players = [];
 
 export default function Home() {
   return (
