@@ -17,28 +17,7 @@ type Player = {
 };
 
 export default function MatchesPage() {
-  const [joinList, setJoinList] = useState<Player[]>([
-    {
-      name: "정글왕",
-      mainLane: "정글",
-      subLane: "서포터",
-    },
-    {
-      name: "미드장인",
-      mainLane: "미드",
-      subLane: "원딜",
-    },
-    {
-      name: "탑신병자",
-      mainLane: "탑",
-      subLane: "정글",
-    },
-    {
-      name: "원딜신",
-      mainLane: "원딜",
-      subLane: "미드",
-    },
-  ]);
+ const [joinList, setJoinList] = useState<Player[]>([]);
 
   const [blueTeam, setBlueTeam] = useState<Player[]>([]);
   const [redTeam, setRedTeam] = useState<Player[]>([]);
