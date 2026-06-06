@@ -30,7 +30,7 @@ const loginWithDiscord = async () => {
 };
   return (
     <header className="bg-slate-950 text-white sticky top-0 z-50 shadow">
-      <div className="max-w-[1500px] mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
         <h1 className="text-2xl font-black">
            404 : ℕ𝕖𝕨 𝔼𝕣𝕒 ｡+.｡☆ﾟ
         </h1>
