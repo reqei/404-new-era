@@ -21,64 +21,58 @@ export default function MyPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
+useEffect(() => {
+  const getUser = async () => {
+    const { data, error } = await supabase.auth.getUser();
 
-      if (error || !data.user) {
-        setMessage("로그인 정보를 가져오지 못했습니다.");
+    if (error || !data.user) {
+      setMessage("로그인 정보를 가져오지 못했습니다.");
+      return;
+    }
+
+    setAvatarUrl(data.user.user_metadata.avatar_url || "");
+
+    const discordName =
+      data.user.user_metadata.global_name ||
+      data.user.user_metadata.name ||
+      "Discord 유저";
+
+    setMessage(`안녕하세요, ${discordName}님!`);
+
+    let { data: profileData } = await supabase
+      .from("profiles")
+      .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
+      .eq("user_id", data.user.id)
+      .maybeSingle();
+
+    if (!profileData) {
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: data.user.id,
+          discord_name: discordName,
+          avatar_url: data.user.user_metadata.avatar_url || "",
+        });
+
+      if (insertError) {
+        alert(insertError.message);
         return;
       }
 
-      setAvatarUrl(data.user.user_metadata.avatar_url || "");
+      const { data: newProfile } = await supabase
+        .from("profiles")
+        .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
 
-      setMessage(
-        `안녕하세요, ${
-          data.user.user_metadata.global_name ||
-          data.user.user_metadata.name ||
-          "Discord 유저"
-        }님!`
-      );
+      profileData = newProfile;
+    }
 
-      let { data: profileData } = await supabase
-  .from("profiles")
-  .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
-  .eq("user_id", data.user.id)
-  .maybeSingle();
+    setProfile(profileData);
+  };
 
-if (!profileData) {
-  const discordName =
-    data.user.user_metadata.global_name ||
-    data.user.user_metadata.name ||
-    "Discord 유저";
-
-  const { error: insertError } = await supabase
-  .from("profiles")
-  .insert({
-    user_id: data.user.id,
-    discord_name: discordName,
-    avatar_url: data.user.user_metadata.avatar_url || "",
-  });
-
-if (insertError) {
-  alert(insertError.message);
-  return;
-}
-
-  const { data: newProfile } = await supabase
-    .from("profiles")
-    .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
-    .eq("user_id", data.user.id)
-    .maybeSingle();
-
-  profileData = newProfile;
-}
-
-setProfile(profileData);
-    };
-
-    getUser();
-  }, []);
+  getUser();
+}, []);
 
   return (
     <main className="p-6 text-black">
