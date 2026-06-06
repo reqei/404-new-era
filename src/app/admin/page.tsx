@@ -70,24 +70,24 @@ export default function AdminPage() {
     fetchProfiles();
   };
 
-  const deleteProfile = async (profile: Profile) => {
-    const ok = confirm(`${profile.discord_name} 유저를 삭제할까요?`);
+ const deleteProfile = async (profile: Profile) => {
+  const ok = confirm(`${profile.discord_name} 유저를 삭제할까요?`);
 
-    if (!ok) return;
+  if (!ok) return;
 
-    const { error } = await supabase
-      .from("profiles")
-      .delete()
-      .eq("user_id", profile.user_id);
+  const { error, count } = await supabase
+    .from("profiles")
+    .delete({ count: "exact" })
+    .eq("user_id", profile.user_id);
 
-    if (error) {
-      alert("삭제 실패");
-      return;
-    }
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-    alert("삭제 완료!");
-    fetchProfiles();
-  };
+  alert(`삭제 완료: ${count}개`);
+  fetchProfiles();
+};
 
   const updateLocal = (
     userId: string,
