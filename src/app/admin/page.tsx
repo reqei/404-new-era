@@ -275,20 +275,6 @@ const addTeamResult = async (
   </button>
 
   <button
-    onClick={() => addMatchResult(profile, "win")}
-    className="bg-green-500 text-white px-5 py-3 rounded-xl font-bold"
-  >
-    승리 기록
-  </button>
-
-  <button
-    onClick={() => addMatchResult(profile, "lose")}
-    className="bg-gray-500 text-white px-5 py-3 rounded-xl font-bold"
-  >
-    패배 기록
-  </button>
-
-  <button
     onClick={() => deleteProfile(profile)}
     className="bg-red-500 text-white px-5 py-3 rounded-xl font-bold"
   >
