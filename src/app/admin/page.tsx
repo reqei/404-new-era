@@ -300,6 +300,7 @@ const addTeamResult = async (
   </button>
 </div>
 
+
 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
   <div className="bg-blue-50 border rounded-2xl p-4">
     <h2 className="text-2xl font-bold text-blue-700 mb-3">

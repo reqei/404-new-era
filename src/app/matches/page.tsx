@@ -3,180 +3,144 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-const matches = [
-  {
-    id: 1,
-    title: "오늘 1차 내전",
-    status: "진행 예정",
-  },
-];
-
-type Player = {
-  name: string;
-  mainLane: string;
-  subLane: string;
-};
-
-type Profile = {
-  discord_name: string;
-  main_lane: string;
-  sub_lane: string;
-};
-
 export default function MatchesPage() {
-  const [joinList, setJoinList] = useState<Player[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [userId, setUserId] = useState("");
+  const [applied, setApplied] = useState(false);
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const fetchApplicationStatus = async (id: string) => {
+    const { count } = await supabase
+      .from("match_applications")
+      .select("*", { count: "exact", head: true });
+
+    setCount(count || 0);
+
+    const { data } = await supabase
+      .from("match_applications")
+      .select("user_id")
+      .eq("user_id", id)
+      .maybeSingle();
+
+    setApplied(!!data);
+  };
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("discord_name, main_lane, sub_lane");
+    const init = async () => {
+      const { data } = await supabase.auth.getUser();
 
-      setProfiles(data || []);
+      if (!data.user) {
+        setLoading(false);
+        return;
+      }
+
+      setUserId(data.user.id);
+      await fetchApplicationStatus(data.user.id);
+      setLoading(false);
     };
 
-    fetchProfiles();
+    init();
   }, []);
+
+  const applyMatch = async () => {
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    if (applied) {
+      alert("이미 참여 신청하셨습니다.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("match_applications")
+      .insert({
+        user_id: userId,
+      });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("참여 신청 완료!");
+    await fetchApplicationStatus(userId);
+  };
+
+  const cancelApply = async () => {
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    if (!applied) {
+      alert("아직 참여 신청하지 않았습니다.");
+      return;
+    }
+
+    const ok = confirm("참여 신청을 취소할까요?");
+
+    if (!ok) return;
+
+    const { error } = await supabase
+      .from("match_applications")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("참여 신청 취소 완료!");
+    await fetchApplicationStatus(userId);
+  };
+
+  if (loading) {
+    return <main className="p-6">불러오는 중...</main>;
+  }
 
   return (
     <main className="p-6">
       <h1 className="text-4xl font-bold mb-6">
-        🎮 내전 목록
+        🎮 내전 신청
       </h1>
 
-      <div className="space-y-4">
-        {matches.map((match) => (
-          <div
-            key={match.id}
-            className="bg-white rounded-2xl shadow p-5 border"
+      <div className="bg-white rounded-2xl shadow p-6 border max-w-xl">
+        <h2 className="text-2xl font-bold mb-3">
+          오늘의 내전
+        </h2>
+
+        <p className="text-gray-600 mb-6">
+          참여 신청자는 공개되지 않습니다.
+        </p>
+
+        <p className="text-xl font-bold mb-6">
+          현재 신청 인원: {count}명
+        </p>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={applyMatch}
+            className="bg-blue-500 text-white px-6 py-3 rounded-xl font-bold"
           >
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {match.title}
-                </h2>
+            참여하기
+          </button>
 
-                <p className="text-gray-600">
-                  현재 참가자: {joinList.length}명
-                </p>
-              </div>
+          <button
+            onClick={cancelApply}
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-xl font-bold text-sm"
+          >
+            참여 취소
+          </button>
+        </div>
 
-              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
-                {match.status}
-              </span>
-            </div>
-
-            <div className="mt-4 bg-gray-50 rounded-xl p-4">
-              <h3 className="font-bold mb-2">
-                참가자 목록
-              </h3>
-
-              {joinList.length === 0 ? (
-                <p className="text-gray-500 mb-3">
-                  아직 참가자가 없습니다.
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {joinList.map((player) => (
-                    <div
-                      key={player.name}
-                      className="bg-white border rounded-xl px-3 py-2 flex items-center gap-4"
-                    >
-                      <span>
-                        👤 {player.name} / 🎯 {player.mainLane} / 🔄{" "}
-                        {player.subLane}
-                      </span>
-
-                      <button
-                        onClick={() =>
-                          setJoinList(
-                            joinList.filter(
-                              (item) => item.name !== player.name
-                            )
-                          )
-                        }
-                        className="text-red-500 font-bold"
-                      >
-                        ❌
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-                <select
-                  value={selectedPlayer}
-                  onChange={(e) => setSelectedPlayer(e.target.value)}
-                  className="border rounded-xl px-3 py-2"
-                >
-                  <option value="">참가자 선택</option>
-
-                  {profiles.map((profile) => (
-                    <option
-                      key={profile.discord_name}
-                      value={profile.discord_name}
-                    >
-                      {profile.discord_name}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  onClick={() => {
-                    if (selectedPlayer === "") {
-                      alert("참가자를 선택해주세요.");
-                      return;
-                    }
-
-                    if (joinList.length >= 10) {
-                      alert("참가 인원이 10명이라 모집이 마감되었습니다.");
-                      return;
-                    }
-
-                    if (
-                      joinList.some(
-                        (player) => player.name === selectedPlayer
-                      )
-                    ) {
-                      alert("이미 참가한 유저입니다.");
-                      return;
-                    }
-
-                    const profile = profiles.find(
-                      (item) => item.discord_name === selectedPlayer
-                    );
-
-                    if (!profile) {
-                      alert("유저 정보를 찾을 수 없습니다.");
-                      return;
-                    }
-
-                    setJoinList([
-                      ...joinList,
-                      {
-                        name: profile.discord_name,
-                        mainLane: profile.main_lane || "-",
-                        subLane: profile.sub_lane || "-",
-                      },
-                    ]);
-
-                    setSelectedPlayer("");
-                  }}
-                  className={`text-white px-4 py-2 rounded-xl ${
-                    joinList.length >= 10
-                      ? "bg-gray-400"
-                      : "bg-blue-500"
-                  }`}
-                >
-                  {joinList.length >= 10 ? "모집 마감" : "참가 신청"}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+        {applied && (
+          <p className="text-green-600 font-bold mt-4">
+            참여 신청 완료 상태입니다.
+          </p>
+        )}
       </div>
     </main>
   );
