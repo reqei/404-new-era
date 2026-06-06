@@ -40,13 +40,34 @@ export default function MyPage() {
         }님!`
       );
 
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
+      let { data: profileData } = await supabase
+  .from("profiles")
+  .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
+  .eq("user_id", data.user.id)
+  .maybeSingle();
 
-      setProfile(profileData);
+if (!profileData) {
+  const discordName =
+    data.user.user_metadata.global_name ||
+    data.user.user_metadata.name ||
+    "Discord 유저";
+
+  await supabase.from("profiles").insert({
+    user_id: data.user.id,
+    discord_name: discordName,
+    avatar_url: data.user.user_metadata.avatar_url || "",
+  });
+
+  const { data: newProfile } = await supabase
+    .from("profiles")
+    .select("riot_id, tier, main_lane, sub_lane, most1, most2, most3")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+
+  profileData = newProfile;
+}
+
+setProfile(profileData);
     };
 
     getUser();
