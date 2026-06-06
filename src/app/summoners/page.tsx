@@ -143,13 +143,19 @@ export default function SummonersPage() {
               />
         </div>
 
-        <h2 className="text-xl font-bold mb-2 text-center">
-          {player.discordName}
-       </h2>
+        <h2
+  className="text-xl font-bold mb-2 text-center truncate"
+  title={player.discordName}
+>
+  {player.discordName}
+</h2>
 
-              <p className="text-gray-500 mb-3">
-                {player.riotId}
-              </p>
+              <p
+  className="text-gray-500 mb-3 truncate"
+  title={player.riotId}
+>
+  {player.riotId}
+</p>
 
               <span
                 className={`inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 ${getTierColor(
