@@ -78,6 +78,10 @@ export default function MatchesPage() {
       alert("아직 참여 신청하지 않았습니다.");
       return;
     }
+    if (count >= 10) {
+  alert("신청 인원이 마감되었습니다.");
+  return;
+}
 
     const ok = confirm("참여 신청을 취소할까요?");
 
@@ -116,9 +120,10 @@ export default function MatchesPage() {
           참여 신청자는 공개되지 않습니다.
         </p>
 
-        <p className="text-xl font-bold mb-6">
-          현재 신청 인원: {count}명
-        </p>
+        <div className="text-xl font-bold mb-6 space-y-1">
+  <p>총인원: 10명</p>
+  <p>현재 신청 인원: {count}명</p>
+</div>
 
         <div className="flex items-center gap-3">
           <button
