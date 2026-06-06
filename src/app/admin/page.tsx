@@ -215,7 +215,35 @@ const addMatchResult = async (
                 className="border rounded-xl px-3 py-2"
               />
             </div>
+<div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="bg-blue-50 border rounded-2xl p-4">
+    <h2 className="text-2xl font-bold text-blue-700 mb-3">
+      🔵 블루팀
+    </h2>
 
+    {profiles
+      .filter((p) => blueTeam.includes(p.user_id))
+      .map((p) => (
+        <p key={p.user_id}>
+          {p.discord_name}
+        </p>
+      ))}
+  </div>
+
+  <div className="bg-red-50 border rounded-2xl p-4">
+    <h2 className="text-2xl font-bold text-red-700 mb-3">
+      🔴 레드팀
+    </h2>
+
+    {profiles
+      .filter((p) => redTeam.includes(p.user_id))
+      .map((p) => (
+        <p key={p.user_id}>
+          {p.discord_name}
+        </p>
+      ))}
+  </div>
+</div>
             <div className="mt-4 flex gap-2 flex-wrap">
                 <button
   onClick={() =>
@@ -234,6 +262,7 @@ const addMatchResult = async (
 >
   레드팀 추가
 </button>
+
   <button
     onClick={() => updateProfile(profile)}
     className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold"
