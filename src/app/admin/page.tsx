@@ -21,7 +21,7 @@ export default function AdminPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
-  
+
   const [blueTeam, setBlueTeam] = useState<string[]>([]);
   const [redTeam, setRedTeam] = useState<string[]>([]);
 
@@ -217,6 +217,23 @@ const addMatchResult = async (
             </div>
 
             <div className="mt-4 flex gap-2 flex-wrap">
+                <button
+  onClick={() =>
+    setBlueTeam([...blueTeam, profile.user_id])
+  }
+  className="bg-blue-500 text-white px-5 py-3 rounded-xl font-bold"
+>
+  블루팀 추가
+</button>
+
+<button
+  onClick={() =>
+    setRedTeam([...redTeam, profile.user_id])
+  }
+  className="bg-red-500 text-white px-5 py-3 rounded-xl font-bold"
+>
+  레드팀 추가
+</button>
   <button
     onClick={() => updateProfile(profile)}
     className="bg-indigo-500 text-white px-5 py-3 rounded-xl font-bold"
